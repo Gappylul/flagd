@@ -14,10 +14,24 @@ type Handler struct {
 	mux   *http.ServeMux
 }
 
-func New(s *store.Store) *Handler {
+func New(s *store.Store, adminKey string) *Handler {
 	h := &Handler{store: s, mux: http.NewServeMux()}
 	h.routes()
-	return h
+
+	if adminKey == "" {
+		slog.Warn("ADMIN_KEY is not set — write routes are unprotected")
+	}
+
+	return &Handler{
+		store: s,
+		mux:   wrap(h.mux, requireAuth(adminKey)),
+	}
+}
+
+func wrap(mux *http.ServeMux, middleware func(http.Handler) http.Handler) *http.ServeMux {
+	wrapped := http.NewServeMux()
+	wrapped.Handle("/", middleware(mux))
+	return wrapped
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -17,6 +17,7 @@ import (
 func main() {
 	redisURL := envOr("REDIS_URL", "redis://localhost:6379")
 	addr := envOr("FLAGD_ADDR", ":8080")
+	adminKey := os.Getenv("ADMIN_KEY")
 
 	opt, err := redis.ParseURL(redisURL)
 	if err != nil {
@@ -30,9 +31,9 @@ func main() {
 	defer rdb.Close()
 
 	s := store.New(rdb)
-	h := api.New(s)
+	h := api.New(s, adminKey)
 
-	slog.Info("flagd started", "addr", addr, "redis", redisURL)
+	slog.Info("flagd started", "addr", addr, "redis", redisURL, "auth", adminKey != "")
 	if err := http.ListenAndServe(addr, h); err != nil {
 		log.Fatal(err)
 	}
