@@ -1,0 +1,21 @@
+<div class="flag-row" id="flag-{{.Name}}">
+    <div>
+        <div class="flag-name">{{.Name}}</div>
+        {{if .Description}}<div class="flag-desc">{{.Description}}</div>{{end}}
+    </div>
+    <div class="flag-meta">{{.UpdatedAt.Format "Jan 02 15:04"}}</div>
+    <label class="toggle"
+           hx-patch="/ui/flags/{{.Name}}/toggle"
+           hx-target="#flag-{{.Name}}"
+           hx-swap="outerHTML"
+           title="toggle {{.Name}}">
+        <input type="checkbox" {{if .Enabled}}checked{{end}} onclick="return false">
+        <div class="track"></div>
+        <div class="thumb"></div>
+    </label>
+    <button class="btn btn-del"
+            hx-delete="/ui/flags/{{.Name}}"
+            hx-target="#flag-{{.Name}}"
+            hx-swap="outerHTML swap:0.15s"
+            hx-confirm="delete {{.Name}}?">del</button>
+</div>

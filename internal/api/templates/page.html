@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:hx-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flagd</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<div class="shell">
+
+    <header>
+        <div class="logo">flag<span>d</span></div>
+        <div class="key-wrap">
+            <label for="admin-key">admin key</label>
+            <input id="admin-key" class="key-input" type="password" placeholder="paste your key…" autocomplete="off">
+            <span id="key-status" class="key-status"></span>
+        </div>
+    </header>
+
+    <p class="section-label">new flag</p>
+    <form class="create-form"
+          hx-post="/ui/flags"
+          hx-target="#flags-list"
+          hx-swap="afterbegin"
+          hx-on::after-request="this.reset()">
+        <input name="name" required placeholder="flag-name"   autocomplete="off">
+        <input name="description" placeholder="description" autocomplete="off">
+        <select name="enabled">
+            <option value="false">disabled</option>
+            <option value="true">enabled</option>
+        </select>
+        <button class="btn btn-create" type="submit">+ create</button>
+    </form>
+
+    <p class="section-label">flags</p>
+    <div id="flags-list"
+         hx-get="/ui/flags"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+        <p class="empty">loading…</p>
+    </div>
+
+</div>
+<script>
+    const keyInput  = document.getElementById('admin-key');
+    const keyStatus = document.getElementById('key-status');
+
+    const stored = sessionStorage.getItem('flagd_key');
+    if (stored) { keyInput.value = stored; keyStatus.classList.add('ok'); }
+
+    keyInput.addEventListener('input', () => {
+        const v = keyInput.value.trim();
+        sessionStorage.setItem('flagd_key', v);
+        keyStatus.classList.toggle('ok', v.length > 0);
+    });
+
+    document.addEventListener('htmx:configRequest', e => {
+        const key = keyInput.value.trim();
+        if (key) e.detail.headers['Authorization'] = 'Bearer ' + key;
+    });
+</script>
+</body>
+</html>

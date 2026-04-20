@@ -10,28 +10,29 @@ import (
 )
 
 type Handler struct {
-	store *store.Store
-	mux   *http.ServeMux
+	store    *store.Store
+	mux      *http.ServeMux
+	adminKey string
 }
 
 func New(s *store.Store, adminKey string) *Handler {
-	h := &Handler{store: s, mux: http.NewServeMux()}
-	h.routes()
-
 	if adminKey == "" {
 		slog.Warn("ADMIN_KEY is not set — write routes are unprotected")
 	}
 
-	return &Handler{
-		store: s,
-		mux:   wrap(h.mux, requireAuth(adminKey)),
-	}
-}
+	h := &Handler{store: s, mux: http.NewServeMux(), adminKey: adminKey}
+	h.routes()
+	h.uiRoutes()
 
-func wrap(mux *http.ServeMux, middleware func(http.Handler) http.Handler) *http.ServeMux {
 	wrapped := http.NewServeMux()
-	wrapped.Handle("/", middleware(mux))
-	return wrapped
+	wrapped.Handle("/", requireAuth(adminKey)(h.mux))
+
+	final := http.NewServeMux()
+	final.Handle("/ui", h.mux)
+	final.Handle("/ui/", h.mux)
+	final.Handle("/", wrapped)
+
+	return &Handler{store: s, mux: final, adminKey: adminKey}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +74,6 @@ func (h *Handler) getFlag(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) upsertFlag(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
-
 	var body struct {
 		Enabled     bool   `json:"enabled"`
 		Description string `json:"description"`
@@ -82,7 +82,6 @@ func (h *Handler) upsertFlag(w http.ResponseWriter, r *http.Request) {
 		respond(w, http.StatusBadRequest, errorBody(err))
 		return
 	}
-
 	flag, err := h.store.Upsert(r.Context(), name, body.Description, body.Enabled)
 	if err != nil {
 		respond(w, http.StatusInternalServerError, errorBody(err))
