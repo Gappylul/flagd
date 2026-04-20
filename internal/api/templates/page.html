@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:hx-on="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="./static/style.css">
 </head>
 <body>
 <div class="shell">
@@ -21,13 +21,15 @@
         </div>
     </header>
 
+    <div id="toast" class="toast" style="display:none"></div>
+
     <p class="section-label">new flag</p>
-    <form class="create-form"
+    <form id="create-form"
+          class="create-form"
           hx-post="/ui/flags"
           hx-target="#flags-list"
-          hx-swap="afterbegin"
-          hx-on::after-request="this.reset()">
-        <input name="name" required placeholder="flag-name"   autocomplete="off">
+          hx-swap="afterbegin">
+        <input name="name" required placeholder="flag-name" autocomplete="off">
         <input name="description" placeholder="description" autocomplete="off">
         <select name="enabled">
             <option value="false">disabled</option>
@@ -48,20 +50,51 @@
 <script>
     const keyInput  = document.getElementById('admin-key');
     const keyStatus = document.getElementById('key-status');
+    const toast     = document.getElementById('toast');
+
+    function setKey(key) {
+        if (key) {
+            document.body.setAttribute('hx-headers', JSON.stringify({ Authorization: 'Bearer ' + key }));
+            keyStatus.classList.add('ok');
+        } else {
+            document.body.removeAttribute('hx-headers');
+            keyStatus.classList.remove('ok');
+        }
+    }
 
     const stored = sessionStorage.getItem('flagd_key');
-    if (stored) { keyInput.value = stored; keyStatus.classList.add('ok'); }
+    if (stored) {
+        keyInput.value = stored;
+        setKey(stored);
+    }
 
     keyInput.addEventListener('input', () => {
         const v = keyInput.value.trim();
         sessionStorage.setItem('flagd_key', v);
-        keyStatus.classList.toggle('ok', v.length > 0);
+        setKey(v);
     });
 
-    document.addEventListener('htmx:configRequest', e => {
-        const key = keyInput.value.trim();
-        if (key) e.detail.headers['Authorization'] = 'Bearer ' + key;
+    document.addEventListener('htmx:afterRequest', e => {
+        if (e.detail.elt.id === 'create-form' && e.detail.successful) {
+            e.detail.elt.reset();
+        }
     });
+
+    document.addEventListener('htmx:responseError', e => {
+        const status = e.detail.xhr.status;
+        const msg = status === 401
+            ? 'unauthorized - check your admin key'
+            : 'error ' + status + ': ' + e.detail.xhr.responseText;
+        showToast(msg, status === 401 ? 'warn' : 'error');
+    });
+
+    function showToast(msg, type) {
+        toast.textContent = msg;
+        toast.className = 'toast toast-' + type;
+        toast.style.display = 'block';
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
 </script>
 </body>
 </html>

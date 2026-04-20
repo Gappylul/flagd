@@ -52,7 +52,7 @@ func (h *Handler) uiListFlags(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if len(flags) == 0 {
-		fmt.Fprint(w, `<p class="empty">no flags yet — create one above</p>`)
+		fmt.Fprint(w, `<p class="empty">no flags yet - create one above</p>`)
 		return
 	}
 	var b strings.Builder

@@ -22,12 +22,10 @@ html, body {
     line-height: 1.6;
 }
 
-.shell {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 48px 24px;
-}
+/* ── Layout ── */
+.shell { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
 
+/* ── Header ── */
 header {
     display: flex;
     align-items: baseline;
@@ -36,31 +34,10 @@ header {
     flex-wrap: wrap;
     gap: 16px;
 }
-
-.logo {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--bright);
-    letter-spacing: -0.5px;
-}
-
-.logo span {
-    color: var(--green);
-}
-
-.key-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.key-wrap label {
-    color: var(--muted);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
+.logo { font-size: 22px; font-weight: 700; color: var(--bright); letter-spacing: -0.5px; }
+.logo span { color: var(--green); }
+.key-wrap { display: flex; align-items: center; gap: 8px; }
+.key-wrap label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
 .key-input {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -73,23 +50,16 @@ header {
     outline: none;
     transition: border-color 0.15s;
 }
-
-.key-input:focus {
-    border-color: var(--green);
-}
-
+.key-input:focus { border-color: var(--green); }
 .key-status {
     width: 8px; height: 8px;
     border-radius: 50%;
     background: var(--muted);
     display: inline-block;
 }
+.key-status.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
 
-.key-status.ok {
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-}
-
+/* ── Create form ── */
 .create-form { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
 .create-form input,
 .create-form select {
@@ -121,6 +91,7 @@ input[name="description"] { flex: 2; min-width: 180px; }
 .btn-create { background: var(--green); color: #000; }
 .btn-create:hover { opacity: 0.85; }
 
+/* ── Flags list ── */
 #flags-list { display: flex; flex-direction: column; gap: 1px; }
 
 .flag-row {
@@ -140,6 +111,7 @@ input[name="description"] { flex: 2; min-width: 180px; }
 .flag-desc { color: var(--muted); font-size: 11px; margin-top: 2px; }
 .flag-meta { color: var(--muted); font-size: 11px; text-align: right; white-space: nowrap; }
 
+/* ── Toggle ── */
 .toggle {
     position: relative;
     display: inline-block;
@@ -174,6 +146,7 @@ input:checked ~ .thumb { transform: translateX(18px); }
 }
 .btn-del:hover { border-color: var(--red); color: var(--red); }
 
+/* ── States ── */
 .empty { color: var(--muted); padding: 32px 0; text-align: center; }
 .section-label {
     font-size: 10px;
@@ -183,7 +156,23 @@ input:checked ~ .thumb { transform: translateX(18px); }
     margin-bottom: 12px;
 }
 
+/* ── Animations ── */
 @keyframes fadeSlide {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: none; }
 }
+
+/* ── Toast ── */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    z-index: 100;
+    border: 1px solid;
+    animation: fadeSlide 0.2s ease;
+}
+.toast-warn  { background: #1a1500; border-color: var(--amber); color: var(--amber); }
+.toast-error { background: #1a0008; border-color: var(--red);   color: var(--red);   }

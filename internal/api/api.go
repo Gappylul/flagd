@@ -16,23 +16,25 @@ type Handler struct {
 }
 
 func New(s *store.Store, adminKey string) *Handler {
-	if adminKey == "" {
-		slog.Warn("ADMIN_KEY is not set — write routes are unprotected")
+	h := &Handler{
+		store:    s,
+		mux:      http.NewServeMux(),
+		adminKey: adminKey,
 	}
 
-	h := &Handler{store: s, mux: http.NewServeMux(), adminKey: adminKey}
 	h.routes()
 	h.uiRoutes()
 
-	wrapped := http.NewServeMux()
-	wrapped.Handle("/", requireAuth(adminKey)(h.mux))
+	finalMux := http.NewServeMux()
 
-	final := http.NewServeMux()
-	final.Handle("/ui", h.mux)
-	final.Handle("/ui/", h.mux)
-	final.Handle("/", wrapped)
+	finalMux.Handle("/ui", h.mux)
+	finalMux.Handle("/ui/", h.mux)
+	finalMux.Handle("/static/", h.mux)
 
-	return &Handler{store: s, mux: final, adminKey: adminKey}
+	finalMux.Handle("/", requireAuth(adminKey)(h.mux))
+
+	h.mux = finalMux
+	return h
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

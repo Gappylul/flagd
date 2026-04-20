@@ -7,8 +7,7 @@
     <label class="toggle"
            hx-patch="/ui/flags/{{.Name}}/toggle"
            hx-target="#flag-{{.Name}}"
-           hx-swap="outerHTML"
-           title="toggle {{.Name}}">
+           hx-swap="outerHTML">
         <input type="checkbox" {{if .Enabled}}checked{{end}} onclick="return false">
         <div class="track"></div>
         <div class="thumb"></div>
