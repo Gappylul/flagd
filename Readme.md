@@ -75,6 +75,38 @@ volumes:
   redis-data:
 ```
 
+## Terraform
+
+```hcl
+terraform {
+  required_providers {
+    flagd = {
+      source  = "gappylul/flagd"
+      version = "~> 0.1"
+    }
+  }
+}
+
+provider "flagd" {
+  url       = "https://flagd.yourdomain.com"
+  admin_key = var.flagd_admin_key   # or set FLAGD_ADMIN_KEY env var
+}
+
+resource "flagd_flag" "dark_mode" {
+  name        = "dark-mode"
+  enabled     = false
+  description = "Dark mode UI"
+}
+
+resource "flagd_flag" "new_checkout" {
+  name        = "new-checkout"
+  enabled     = true
+  description = "New checkout flow"
+}
+```
+
+_The [flagd terraform provider](https://github.com/gappylul/terraform-provider-flagd)_
+
 ## API
 
 Read routes are public. Write routes require `Authorization: Bearer <ADMIN_KEY>`.
