@@ -34,10 +34,20 @@ func New(s *store.Store, adminKey string) *Handler {
 	finalMux.Handle("/", requireAuth(adminKey)(h.mux))
 
 	h.mux = finalMux
+
 	return h
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	h.mux.ServeHTTP(w, r)
 }
 
